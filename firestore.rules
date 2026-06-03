@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      // In development env, email_verified might not be true, so we can check if it's there
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'moises.gadi@gmail.com' ||
+        request.auth.token.email == 'Moises.Gadi@gmail.com' || 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'brand', 'category', 'price', 'minQuantity']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             data.brand is string && data.brand.size() > 0 && data.brand.size() <= 100 &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 100 &&
+             data.price is number && data.price >= 0 &&
+             data.minQuantity is number && data.minQuantity >= 1 &&
+             (!('stepQuantity' in data.keys()) || (data.stepQuantity is number && data.stepQuantity >= 1)) &&
+             (!('productionTime' in data.keys()) || (data.productionTime is string && data.productionTime.size() <= 100)) &&
+             (!('imageColor' in data.keys()) || (data.imageColor is string && data.imageColor.size() <= 100)) &&
+             (!('imageUrl' in data.keys()) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+             (!('images' in data.keys()) || data.images is list) &&
+             (!('priority' in data.keys()) || data.priority is number);
+    }
+
+    function isValidPriceTable(data) {
+      return data.keys().hasAll(['regionName', 'type']) &&
+             data.regionName is string && data.regionName.size() > 0 && data.regionName.size() <= 100 &&
+             data.type is string && data.type in ['capital', 'interior'] &&
+             (!('multiplier' in data.keys()) || (data.multiplier is number && data.multiplier >= 0)) &&
+             (!('prices' in data.keys()) || data.prices is map);
+    }
+
+    function isValidAdmin(data) {
+      return data.keys().hasAll(['email', 'role']) &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 200 &&
+             data.role is string && data.role == 'admin';
+    }
+
+    function isValidCoupon(data) {
+      return data.keys().hasAll(['code', 'discountPercentage']) &&
+             data.code is string && data.code.size() > 0 && data.code.size() <= 64 &&
+             data.discountPercentage is number && data.discountPercentage > 0 && data.discountPercentage <= 100;
+    }
+
+    match /products/{productId} {
+      allow read: if true; 
+      allow create: if isAdmin() && isValidId(productId) && isValidProduct(incoming()) && incoming().keys().size() <= 11;
+      allow update: if isAdmin() && isValidProduct(incoming()) && incoming().keys().size() <= 11;
+      allow delete: if isAdmin();
+    }
+
+    match /priceTables/{priceTableId} {
+      allow read: if true; 
+      allow create: if isAdmin() && isValidId(priceTableId) && isValidPriceTable(incoming()) && incoming().keys().size() <= 4;
+      allow update: if isAdmin() && isValidPriceTable(incoming()) && incoming().keys().size() <= 4;
+      allow delete: if isAdmin();
+    }
+
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(couponId) && isValidCoupon(incoming());
+      allow update: if isAdmin() && isValidCoupon(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /proposals/{proposalId} {
+      allow create: if incoming().keys().hasAll(['companyName', 'cnpj', 'total', 'items', 'status']) && 
+                    incoming().total is number;
+      allow read, update, delete: if isAdmin();
+    }
+    
+    match /leads/{leadId} {
+      allow read, write: if true;
+    }
+
+    match /admins/{userId} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow create, update, delete: if isAdmin() && isValidId(userId);
+    }
+  }
+}

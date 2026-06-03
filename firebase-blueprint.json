@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A B2B catalog product.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "brand": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "minQuantity": { "type": "number" },
+        "stepQuantity": { "type": "number" },
+        "productionTime": { "type": "string" },
+        "imageColor": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["name", "brand", "category", "price", "minQuantity"]
+    },
+    "PriceTable": {
+      "title": "Price Table",
+      "description": "Region-specific price list.",
+      "type": "object",
+      "properties": {
+        "regionName": { "type": "string" },
+        "type": { "type": "string", "enum": ["capital", "interior"] },
+        "multiplier": { "type": "number" },
+        "prices": {
+           "type": "object"
+        }
+      },
+      "required": ["regionName", "type"]
+    },
+    "Admin": {
+      "title": "Admin User",
+      "description": "A user with admin privileges.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Catalog products."
+    },
+    "/priceTables/{priceTableId}": {
+      "schema": { "$ref": "#/entities/PriceTable" },
+      "description": "Regional price adjustments."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Admin configuration."
+    }
+  }
+}
