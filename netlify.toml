@@ -1,0 +1,11 @@
+[build]
+  # O comando de build do seu projeto
+  command = "npm run build"
+  # O diretório que o Netlify vai publicar (onde estão os arquivos compilados)
+  publish = "dist"
+
+# Redirecionamento para o React (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
