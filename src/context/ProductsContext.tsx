@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { Product } from '../data/products';
-import { products as staticProducts } from '../data/products';
+import { Product, products as staticProducts } from '../data/products';
 
 enum OperationType {
   GET = 'get',
@@ -23,7 +22,14 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   console.error('Firestore Error: ', JSON.stringify(errInfo));
 }
 
-export function useProducts() {
+interface ProductsContextType {
+  products: Product[];
+  loading: boolean;
+}
+
+const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
+
+export function ProductsProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +39,7 @@ export function useProducts() {
         collection(db, 'products'),
         (snapshot) => {
           if (snapshot.empty) {
-            setProducts(staticProducts);
+            setProducts([]);
           } else {
             const loadedProducts = snapshot.docs.map((doc) => {
               const data = doc.data();
@@ -53,7 +59,7 @@ export function useProducts() {
         },
         (error) => {
           handleFirestoreError(error, OperationType.GET, 'products');
-          setProducts(staticProducts); // Fallback if query fails
+          setProducts([]); // Fallback if query fails
           setLoading(false);
         }
       );
@@ -63,5 +69,17 @@ export function useProducts() {
     return fetchProducts();
   }, []);
 
-  return { products, loading };
+  return (
+    <ProductsContext.Provider value={{ products, loading }}>
+      {children}
+    </ProductsContext.Provider>
+  );
+}
+
+export function useProducts() {
+  const context = useContext(ProductsContext);
+  if (context === undefined) {
+    throw new Error('useProducts must be used within a ProductsProvider');
+  }
+  return context;
 }

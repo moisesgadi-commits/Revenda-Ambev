@@ -28,8 +28,8 @@ export function generateWhatsAppLink(
     message += `- ${item.quantity}x ${item.name} (${formatCurrency(item.price)})\n`;
   });
   
-  message += `\n*TOTAL APROXIMADO:* ${formatCurrency(total)}\n`;
-  message += `*MODALIDADE DE FRETE:* ${shippingOption}\n\n`;
+  message += `\n*TOTAL APROXIMADO DA PROPOSTA:* ${formatCurrency(total)}\n`;
+  message += `*COMENTÁRIO LOGÍSTICA:* ${shippingOption}\n\n`;
   message += `*Gostaria de finalizar esta negociação e combinar o pagamento.*`;
   
   const encodedMessage = encodeURIComponent(message);
@@ -47,6 +47,7 @@ export function generateEmailLink(
   leadPhone: string
 ): string {
   const toEmails = 'moises.gadi@gpsproducts.com.br,vinicius.silva@gpsproducts.com.br';
+  const ccEmail = leadEmail;
   const subject = `Nova Cotação B2B - ${companyName}`;
   
   let message = `NOVO PEDIDO B2B - DISTRIBUIDORA\n\n`;
@@ -66,5 +67,5 @@ export function generateEmailLink(
   
   // Note: For mailto links we use standard encodeURIComponent, though spaces can also be %20
   const encodedMessage = encodeURIComponent(message);
-  return `mailto:${toEmails}?subject=${encodeURIComponent(subject)}&body=${encodedMessage}`;
+  return `mailto:${toEmails}?cc=${encodeURIComponent(ccEmail)}&subject=${encodeURIComponent(subject)}&body=${encodedMessage}`;
 }

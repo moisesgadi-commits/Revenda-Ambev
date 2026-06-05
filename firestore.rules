@@ -42,7 +42,11 @@ service cloud.firestore {
              (!('imageColor' in data.keys()) || (data.imageColor is string && data.imageColor.size() <= 100)) &&
              (!('imageUrl' in data.keys()) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
              (!('images' in data.keys()) || data.images is list) &&
-             (!('priority' in data.keys()) || data.priority is number);
+             (!('priority' in data.keys()) || data.priority is number) &&
+             (!('packageWidth' in data.keys()) || data.packageWidth is number) &&
+             (!('packageHeight' in data.keys()) || data.packageHeight is number) &&
+             (!('packageDepth' in data.keys()) || data.packageDepth is number) &&
+             (!('packageWeight' in data.keys()) || data.packageWeight is number);
     }
 
     function isValidPriceTable(data) {
@@ -67,8 +71,8 @@ service cloud.firestore {
 
     match /products/{productId} {
       allow read: if true; 
-      allow create: if isAdmin() && isValidId(productId) && isValidProduct(incoming()) && incoming().keys().size() <= 11;
-      allow update: if isAdmin() && isValidProduct(incoming()) && incoming().keys().size() <= 11;
+      allow create: if isAdmin() && isValidId(productId) && isValidProduct(incoming()) && incoming().keys().size() <= 15;
+      allow update: if isAdmin() && isValidProduct(incoming()) && incoming().keys().size() <= 15;
       allow delete: if isAdmin();
     }
 
@@ -84,6 +88,11 @@ service cloud.firestore {
       allow create: if isAdmin() && isValidId(couponId) && isValidCoupon(incoming());
       allow update: if isAdmin() && isValidCoupon(incoming());
       allow delete: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /proposals/{proposalId} {

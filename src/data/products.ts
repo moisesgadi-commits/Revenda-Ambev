@@ -12,6 +12,10 @@ export interface Product {
   imageColor: string; // Used for placeholder backgrounds
   images?: string[];
   priority?: number;
+  packageWidth?: number; // cm
+  packageHeight?: number; // cm
+  packageDepth?: number; // cm
+  packageWeight?: number; // kg
 }
 
 export const products: Product[] = [

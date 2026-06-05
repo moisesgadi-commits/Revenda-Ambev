@@ -1,5 +1,5 @@
 {
-  "name": "Catálogo B2B - Parceiro Ambev",
+  "name": "Global Products Atendimento Revendas Ambev",
   "description": "E-commerce B2B para itens homologados Ambev (Cervegelas, Baldes e Luminosos), com integração via WhatsApp.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

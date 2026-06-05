@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Brand } from '../data/products';
 import { ProductCard } from './ProductCard';
 import { Search, Filter, ShoppingBag, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useProducts } from '../hooks/useProducts';
+import { useProducts } from '../context/ProductsContext';
 
 export function Catalog() {
   const { products, loading } = useProducts();

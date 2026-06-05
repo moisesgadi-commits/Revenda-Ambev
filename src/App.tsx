@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ProductsProvider, useProducts } from './context/ProductsContext';
 import { Catalog } from './components/Catalog';
 import { CartSidebar } from './components/CartSidebar';
 import { AdminPanel } from './components/AdminPanel';
@@ -16,12 +17,29 @@ function AppContent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { user, login } = useAuth();
   const { items } = useCart();
+  const { loading } = useProducts();
 
   useEffect(() => {
     if (window.location.pathname === '/admin') {
       setActiveTab('admin');
     }
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center animate-pulse">
+          <img 
+            src="https://i.ibb.co/Y70xyGZz/GLOBAL-preferencial-black-1.png" 
+            alt="GLOBAL Logo" 
+            className="h-16 mb-4 object-contain"
+          />
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mt-4"></div>
+          <p className="text-slate-500 font-medium mt-4 text-sm tracking-widest uppercase">Carregando Plataforma...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 relative">
@@ -70,10 +88,15 @@ function AppContent() {
           )}
           <button 
             onClick={() => setIsCartOpen(true)}
-            className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-2 transition-colors border border-blue-100"
+            className={`relative px-4 py-1.5 rounded-lg font-bold text-xs flex items-center gap-2 transition-colors border ${items.length > 0 ? 'bg-blue-100 text-blue-800 border-blue-200 shadow-sm animate-pulse' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-100'}`}
           >
             <ShoppingCart className="w-4 h-4" />
             <span className="hidden sm:inline">Cotação</span>
+            {items.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow">
+                {items.length}
+              </span>
+            )}
           </button>
         </div>
       </header>
@@ -116,9 +139,11 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <AppContent />
-      </CartProvider>
+      <ProductsProvider>
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
+      </ProductsProvider>
     </AuthProvider>
   );
 }

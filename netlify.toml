@@ -4,6 +4,16 @@
   # O diretório que o Netlify vai publicar (onde estão os arquivos compilados)
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Redirecionamento para a API via Serverless Functions do Netlify
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
 # Redirecionamento para o React (SPA)
 [[redirects]]
   from = "/*"
