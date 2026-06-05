@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(u);
       if (u) {
         // Here we check if user is admin
-        if (u.email?.toLowerCase() === 'moises.gadi@gmail.com'.toLowerCase()) {
+        if (u.email?.toLowerCase() === 'moises.gadi@gmail.com'.toLowerCase() || u.email?.toLowerCase() === 'noreply.gpsproducts@gmail.com'.toLowerCase()) {
           setIsAdmin(true);
         } else {
           // Check DB admins collection just in case

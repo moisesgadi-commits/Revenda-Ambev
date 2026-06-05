@@ -138,19 +138,18 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     
     setIsLoadingProfile(true);
     try {
-      const { collection, query, where, getDocs } = await import('firebase/firestore');
-      const q = query(collection(db, 'proposals'), where('leadEmail', '==', email.toLowerCase()));
-      const querySnapshot = await getDocs(q);
+      const { doc, getDoc } = await import('firebase/firestore');
+      const docSnap = await getDoc(doc(db, 'leads', email.toLowerCase()));
       
-      const profilesMap = new Map();
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
+      const profiles = [];
+      if (docSnap.exists()) {
+        const data = docSnap.data();
         if (data.cnpj) {
-          profilesMap.set(data.cnpj, {
+          profiles.push({
             cnpj: data.cnpj || '',
             companyName: data.companyName || '',
-            leadName: data.leadName || '',
-            leadPhone: data.leadPhone || '',
+            leadName: data.name || data.leadName || '',
+            leadPhone: data.phone || data.leadPhone || '',
             cep: data.cep || '',
             address: data.address || '',
             addressNumber: data.addressNumber || '',
@@ -160,9 +159,8 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             deliverySchedule: data.deliverySchedule || ''
           });
         }
-      });
+      }
       
-      const profiles = Array.from(profilesMap.values());
       setLeadProfiles(profiles);
 
       if (profiles.length > 0) {
@@ -202,7 +200,7 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     try {
       const { collection, query, where, getDocs, orderBy, limit } = await import('firebase/firestore');
       const q = query(
-        collection(db, 'proposals'),
+        collection(db, 'leads'),
         where('cnpj', '==', cnpjInput)
       );
       const querySnapshot = await getDocs(q);
@@ -210,7 +208,7 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
       let latestDoc: any = null;
       querySnapshot.forEach(doc => {
          const data = doc.data();
-         if (!latestDoc || (data.createdAt && data.createdAt > latestDoc.createdAt)) {
+         if (!latestDoc || (data.updatedAt && data.updatedAt > latestDoc.updatedAt)) {
            latestDoc = data;
          }
       });
@@ -315,6 +313,13 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
           phone: leadPhone,
           companyName,
           cnpj,
+          cep,
+          address,
+          addressNumber,
+          neighborhood,
+          city,
+          addressState,
+          deliverySchedule,
           updatedAt: new Date().toISOString()
         }, { merge: true });
       }
@@ -366,7 +371,7 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     }
 
     const link = generateWhatsAppLink(orderItems, finalTotal, companyName, cnpj, shippingText, leadName, leadEmail, leadPhone);
-    window.open(link, '_blank');
+    window.location.href = link;
   };
 
   return (
