@@ -280,6 +280,9 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
        shippingText += ` - ${formatCurrency(calculatedFreightValue)} (Cubagem: ${totalVolume.toFixed(2)} m³, Peso: ${totalWeight.toFixed(2)} kg, Prazo estimado: ${freightTime} dias)`;
     }
 
+    const link = generateWhatsAppLink(orderItems, finalTotal, companyName, cnpj, shippingText, leadName, leadEmail, leadPhone);
+    window.open(link, '_blank');
+
     // Salva no banco em background
     import('firebase/firestore').then(({ setDoc, doc }) => {
       addDoc(collection(db, 'proposals'), {
@@ -358,9 +361,6 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     }).catch(e => console.error('Failed API', e));
 
     setIsSubmitting(false);
-
-    const link = generateWhatsAppLink(orderItems, finalTotal, companyName, cnpj, shippingText, leadName, leadEmail, leadPhone);
-    window.location.href = link;
   };
 
   return (
