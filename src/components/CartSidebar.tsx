@@ -274,11 +274,15 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
       image: (item.product.images && item.product.images.length > 0) ? item.product.images[0] : null
     }));
     
-    try {
-      const { setDoc, doc } = await import('firebase/firestore');
-      
-      // Save proposal
-      await addDoc(collection(db, 'proposals'), {
+    let shippingText = getShippingText();
+    let freightTime = shippingMode === 'Calcular Frete' ? (freightRegion === 'capital' ? (freightRates[addressState]?.capitalDeliveryTime || 0) : (freightRates[addressState]?.interiorDeliveryTime || 0)) : 0;
+    if (calculatedFreightValue > 0) {
+       shippingText += ` - ${formatCurrency(calculatedFreightValue)} (Cubagem: ${totalVolume.toFixed(2)} m³, Peso: ${totalWeight.toFixed(2)} kg, Prazo estimado: ${freightTime} dias)`;
+    }
+
+    // Salva no banco em background
+    import('firebase/firestore').then(({ setDoc, doc }) => {
+      addDoc(collection(db, 'proposals'), {
         companyName,
         cnpj,
         leadName,
@@ -292,9 +296,9 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         addressState,
         deliverySchedule,
         paymentTerm,
-        shippingOption: getShippingText(),
+        shippingOption: shippingText,
         freightValue: calculatedFreightValue,
-        freightDeliveryTime: shippingMode === 'Calcular Frete' ? (freightRegion === 'capital' ? (freightRates[addressState]?.capitalDeliveryTime || 0) : (freightRates[addressState]?.interiorDeliveryTime || 0)) : 0,
+        freightDeliveryTime: freightTime,
         totalVolume,
         totalWeight,
         total: finalTotal,
@@ -303,11 +307,10 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         items: orderItems,
         createdAt: new Date().toISOString(),
         status: 'pending'
-      });
+      }).catch(err => console.error('Erro propos:', err));
       
-      // Save or update lead profile
       if (leadEmail) {
-        await setDoc(doc(db, 'leads', leadEmail.toLowerCase()), {
+        setDoc(doc(db, 'leads', leadEmail.toLowerCase()), {
           name: leadName,
           email: leadEmail,
           phone: leadPhone,
@@ -321,54 +324,40 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
           addressState,
           deliverySchedule,
           updatedAt: new Date().toISOString()
-        }, { merge: true });
+        }, { merge: true }).catch(err => console.error('Erro lead:', err));
       }
-      
-      console.log('Proposta e perfil salvos com sucesso!');
-      
-    } catch (error) {
-      console.error('Erro ao processar proposta:', error);
-    }
-    
-    setIsSubmitting(false);
-    
-    let shippingText = getShippingText();
-    let freightTime = shippingMode === 'Calcular Frete' ? (freightRegion === 'capital' ? (freightRates[addressState]?.capitalDeliveryTime || 0) : (freightRates[addressState]?.interiorDeliveryTime || 0)) : 0;
-    if (calculatedFreightValue > 0) {
-       shippingText += ` - ${formatCurrency(calculatedFreightValue)} (Cubagem: ${totalVolume.toFixed(2)} m³, Peso: ${totalWeight.toFixed(2)} kg, Prazo estimado: ${freightTime} dias)`;
-    }
+    }).catch(console.error);
 
-    try {
-      await fetch('/api/send-proposal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          leadName,
-          leadEmail,
-          leadPhone,
-          companyName,
-          cnpj,
-          shippingOption: shippingText,
-          items: orderItems,
-          total: cartTotal,
-          freightValue: calculatedFreightValue,
-          discount: appliedDiscount * cartTotal,
-          paymentTerm,
-          deliverySchedule,
-          cep,
-          address,
-          addressNumber,
-          neighborhood,
-          city,
-          addressState,
-          freightDeliveryTime: freightTime
-        })
-      });
-    } catch (e) {
-      console.error('Failed to send email API', e);
-    }
+    // Dispara webhook em background
+    fetch('/api/send-proposal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        leadName,
+        leadEmail,
+        leadPhone,
+        companyName,
+        cnpj,
+        shippingOption: shippingText,
+        items: orderItems,
+        total: cartTotal,
+        freightValue: calculatedFreightValue,
+        discount: appliedDiscount * cartTotal,
+        paymentTerm,
+        deliverySchedule,
+        cep,
+        address,
+        addressNumber,
+        neighborhood,
+        city,
+        addressState,
+        freightDeliveryTime: freightTime
+      })
+    }).catch(e => console.error('Failed API', e));
+
+    setIsSubmitting(false);
 
     const link = generateWhatsAppLink(orderItems, finalTotal, companyName, cnpj, shippingText, leadName, leadEmail, leadPhone);
     window.location.href = link;
