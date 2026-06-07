@@ -45,7 +45,9 @@ async function startServer() {
       }
 
       const transporter = nodemailer.createTransport({
-        service: "gmail",
+        host: process.env.SMTP_HOST || "smtp.hostinger.com",
+        port: parseInt(process.env.SMTP_PORT || "465"),
+        secure: process.env.SMTP_SECURE !== "false",
         auth: {
           user: smtpUser,
           pass: smtpPass,

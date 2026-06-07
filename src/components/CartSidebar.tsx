@@ -324,7 +324,7 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     }
 
     const link = generateWhatsAppLink(orderItems, finalTotal, companyName, cnpj, shippingText, leadName, leadEmail, leadPhone);
-    window.location.href = link;
+    window.open(link, '_blank');
 
     // Salva no banco em background
     import('firebase/firestore').then(({ setDoc, doc }) => {
