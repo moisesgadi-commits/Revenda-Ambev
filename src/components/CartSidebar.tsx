@@ -159,6 +159,32 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             deliverySchedule: data.deliverySchedule || ''
           });
         }
+      } else {
+        // Fallback to searching proposals
+        const { collection, query, where, getDocs } = await import('firebase/firestore');
+        const q = query(collection(db, 'proposals'), where('leadEmail', '==', email.toLowerCase()));
+        const querySnapshot = await getDocs(q);
+        
+        const profilesMap = new Map();
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.cnpj) {
+            profilesMap.set(data.cnpj, {
+              cnpj: data.cnpj || '',
+              companyName: data.companyName || '',
+              leadName: data.leadName || '',
+              leadPhone: data.leadPhone || '',
+              cep: data.cep || '',
+              address: data.address || '',
+              addressNumber: data.addressNumber || '',
+              neighborhood: data.neighborhood || '',
+              city: data.city || '',
+              addressState: data.addressState || '',
+              deliverySchedule: data.deliverySchedule || ''
+            });
+          }
+        });
+        profiles.push(...Array.from(profilesMap.values()));
       }
       
       setLeadProfiles(profiles);
@@ -212,6 +238,21 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
            latestDoc = data;
          }
       });
+
+      if (!latestDoc) {
+        // Fallback to searching proposals
+        const fallbackQ = query(
+          collection(db, 'proposals'),
+          where('cnpj', '==', cnpjInput)
+        );
+        const fallbackSnapshot = await getDocs(fallbackQ);
+        fallbackSnapshot.forEach(doc => {
+           const data = doc.data();
+           if (!latestDoc || (data.createdAt && data.createdAt > latestDoc.createdAt)) {
+             latestDoc = data;
+           }
+        });
+      }
 
       if (latestDoc && latestDoc.address) {
         if (!address) setAddress(latestDoc.address || '');
@@ -281,7 +322,7 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     }
 
     const link = generateWhatsAppLink(orderItems, finalTotal, companyName, cnpj, shippingText, leadName, leadEmail, leadPhone);
-    window.open(link, '_blank');
+    window.location.href = link;
 
     // Salva no banco em background
     import('firebase/firestore').then(({ setDoc, doc }) => {
