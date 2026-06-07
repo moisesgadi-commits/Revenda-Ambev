@@ -23,7 +23,7 @@ export function Catalog() {
     <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto">
       {/* Banner Section - Place for full-width image */}
       <div className="w-full h-[150px] sm:h-[300px] mb-8 bg-white flex items-center justify-center rounded-xl shadow-sm overflow-hidden">
-        <img src="https://i.ibb.co/gF73hv4t/Produtos.png" alt="Banner Produtos" className="h-full w-full object-contain" referrerPolicy="no-referrer" />
+        <img src="https://i.ibb.co/gF73hv4t/Produtos.png" alt="Banner Produtos" fetchPriority="high" className="h-full w-full object-contain" referrerPolicy="no-referrer" />
       </div>
 
       <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">

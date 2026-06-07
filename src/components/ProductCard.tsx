@@ -31,6 +31,7 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           {product.images && product.images.length > 0 && (
             <img 
               src={product.images[0]} 
+              loading="lazy"
               alt={product.name}
               className="absolute inset-0 w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
               referrerPolicy="no-referrer"
@@ -95,6 +96,7 @@ export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
                     <>
                       <img 
                         src={product.images[currentImgIndex]} 
+                        loading="lazy"
                         alt={product.name}
                         className="absolute inset-0 w-full h-full object-contain"
                         referrerPolicy="no-referrer"

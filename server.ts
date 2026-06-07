@@ -116,6 +116,7 @@ async function startServer() {
             <p><strong>Global Products Equipamentos Industriais</strong></p>
             <p>Estrada do Saboó 217, Jardim São João, Guarulhos - SP, CEP: 07151-130</p>
             <p><strong>Atendimento Comercial:</strong> (11) 99409-0984</p>
+            <p><strong>Site:</strong> <a href="https://gpsrevenda.com.br/" style="color: #1e3a8a;">gpsrevenda.com.br</a></p>
           </div>
         </div>
       `;

@@ -81,11 +81,13 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     const h = (item.product.packageHeight || 0) / 100;
     const d = (item.product.packageDepth || 0) / 100;
     const vol = w * h * d;
-    return acc + (vol * item.quantity);
+    const boxCount = item.quantity / (item.product.stepQuantity || 1);
+    return acc + (vol * boxCount);
   }, 0);
 
   const totalWeight = items.reduce((acc, item) => {
-    return acc + ((item.product.packageWeight || 0) * item.quantity);
+    const boxCount = item.quantity / (item.product.stepQuantity || 1);
+    return acc + ((item.product.packageWeight || 0) * boxCount);
   }, 0);
 
   React.useEffect(() => {
@@ -453,7 +455,7 @@ export function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                     <div key={item.product.id} className="flex gap-4 p-4 border border-slate-200 bg-white rounded-lg relative shadow-sm">
                       <div className={`w-14 h-14 rounded-md ${item.product.images && item.product.images.length > 0 ? 'bg-white p-1' : `bg-gradient-to-br ${item.product.imageColor}`} shrink-0 overflow-hidden relative border border-slate-100`}>
                         {item.product.images && item.product.images.length > 0 && (
-                          <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                          <img src={item.product.images[0]} alt={item.product.name} loading="lazy" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                         )}
                       </div>
                       <div className="flex-grow">

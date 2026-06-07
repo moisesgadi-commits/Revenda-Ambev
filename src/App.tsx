@@ -9,7 +9,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProductsProvider, useProducts } from './context/ProductsContext';
 import { Catalog } from './components/Catalog';
 import { CartSidebar } from './components/CartSidebar';
-import { AdminPanel } from './components/AdminPanel';
+const AdminPanel = React.lazy(() => import('./components/AdminPanel').then(module => ({ default: module.AdminPanel })));
 import { ShoppingCart, LogIn, ChevronRight, PackageSearch, Settings } from 'lucide-react';
 
 function AppContent() {
@@ -104,7 +104,11 @@ function AppContent() {
       {/* Main Content Area */}
       <main className="flex-1">
         {activeTab === 'catalog' && <Catalog />}
-        {activeTab === 'admin' && <AdminPanel />}
+        {activeTab === 'admin' && (
+          <React.Suspense fallback={<div className="p-8 text-center text-slate-500 font-medium">Carregando painel de administração...</div>}>
+            <AdminPanel />
+          </React.Suspense>
+        )}
         
         {/* Footer */}
         <footer className="mt-12 bg-white border-t border-slate-200 py-8 text-center shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
